@@ -4,39 +4,27 @@ Build a Star Schema-based Data Warehouse + load date dimension + analytical quer
 
 ## Requirements Overview
 
-| Req | Description | Marks | Assigned to |
-|-----|-------------|-------|-------------|
-| [Req 1](req1-schema/) | Dimensional Model tables (PKs, FKs, Indexes) | 5 | Member A |
-| [Req 2](req2-dimdate/) | Date dimension & Stored Procedure to load it | 3 | Member A |
-| [Req 3](req3-query/) | Compelling Warehouse Query ("Predict the Future") | 2 | Member A |
+| Req                 | Description                                  | Marks | Source                                               |
+| ------------------- | -------------------------------------------- | ----- | ---------------------------------------------------- |
+| [Req 1](req1-schema/)  | Dimensional Model tables (PKs, FKs, Indexes) | 5     | [create-tables.sql](req1-schema/create-tables.sql)      |
+| [Req 2](req2-dimdate/) | DimDate_Load SP + WHILE Loop 5 years         | 3     | [dimdate-load.sql](req2-dimdate/dimdate-load.sql)       |
+| [Req 3](req3-query/)   | Compelling Query — "Predict the Future"     | 2     | [compelling-query.sql](req3-query/compelling-query.sql) |
 
 ## Dependencies
 
 ```
 Phase 0 (Environment Setup)
-  └→ Req 1 (Table creation) ★ Blocker for Part 2 — all members need DDL before starting
+  └→ Req 1 (Table creation) 
        └→ Req 2 (DimDate load)
-            └→ Req 3 (Compelling query — written in Part 1, executed after Req 7)
+            └→ Req 3 (Written now, tested after Req 7 loads data)
 ```
-
-## Course Materials
-
-- **Week 7 PDF:** Star Schema, Dimensional Modelling, Fact/Dim table structures
-  - `resources/course-material/PROG3240_week7_dimensional-model-part1.pdf`
-- **Week 7 class notes (Logbook):** CREATE TABLE, INDEX, DimDate_Load SP code
-  - `logbook/2026-02-26/log.md`
 
 ## Deliverable
 
-`Part1_Group11.sql` — Req 1 + 2 + 3 combined into a single file
+`submission/Part1_Group11.sql` — Req 1 + 2 + 3 combined into a single file.
 
-```sql
-/* REQUIREMENT 1 */
--- CREATE TABLE, ALTER TABLE, CREATE INDEX ...
+## Course Materials
 
-/* REQUIREMENT 2 */
--- DimDate_Load SP + WHILE Loop
-
-/* REQUIREMENT 3 */
--- Compelling Query
-```
+- **Week 7 PDF:** Star Schema, FactOrders, DimDate, Indexes
+- **Week 9 PDF:** SCD Types (p.6-18), DimCustomers/Products/SalesPeople/Location CREATE TABLE (p.18)
+- **Exploration notebook:** [req1-schema/part-b-explore.ipynb](req1-schema/part-b-explore.ipynb)
