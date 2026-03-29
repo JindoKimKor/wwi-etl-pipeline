@@ -1,8 +1,8 @@
 # Req 4: Extract (6 marks)
 
-## Contract: Stage Table Structure (this Req defines → Req 5 consumes)
+## Stage Table Structure (agreed by team → input for Req 5 Transform)
 
-The Stage tables created in this Req become the **input for Req 5 (Transform)**. Member C needs to know the column names/types of the Stage tables to write Transform SPs.
+The Stage tables defined here are used by **all three implementations** (T-SQL, Python, SSIS). The column structure must be agreed upon before anyone starts Transform.
 
 | Stage Table | Consumer | Key Columns (needs agreement) |
 |-------------|----------|-------------------------------|
@@ -101,8 +101,9 @@ conn_dm.commit()
 - [ ] Write Extract SP: Salespeople
 - [ ] Write Extract SP: Orders (date parameter)
 - [ ] Write Extract SP: Suppliers
-- [ ] Convert 1 to Python (using pyodbc)
-- [ ] Convert 1 to SSIS package
+- [ ] **Member A:** Implement above SPs in T-SQL
+- [ ] **Member B:** Implement at least 1 Extract in Python (pyodbc)
+- [ ] **Member C:** Implement at least 1 Extract in SSIS package
 - [ ] Test execution for each (use '2013-01-01' for Orders)
 
 ## References

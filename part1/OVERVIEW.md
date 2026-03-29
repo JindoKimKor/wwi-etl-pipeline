@@ -8,15 +8,15 @@ Build a Star Schema-based Data Warehouse + load date dimension + analytical quer
 |-----|-------------|-------|-------------|
 | [Req 1](req1-schema/) | Dimensional Model tables (PKs, FKs, Indexes) | 5 | Member A |
 | [Req 2](req2-dimdate/) | Date dimension & Stored Procedure to load it | 3 | Member A |
-| [Req 3](req3-query/) | Compelling Warehouse Query ("Predict the Future") | 2 | All members |
+| [Req 3](req3-query/) | Compelling Warehouse Query ("Predict the Future") | 2 | Member A |
 
 ## Dependencies
 
 ```
 Phase 0 (Environment Setup)
-  └→ Req 1 (Table creation) ★ Full blocker — B,C cannot start until this is done
+  └→ Req 1 (Table creation) ★ Blocker for Part 2 — all members need DDL before starting
        └→ Req 2 (DimDate load)
-            └→ ... After Req 7 → Req 3 (Analytical query)
+            └→ Req 3 (Compelling query — written in Part 1, executed after Req 7)
 ```
 
 ## Course Materials

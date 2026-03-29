@@ -6,8 +6,8 @@
 |------|---------|--------|
 | `Part1_Group11.sql` | Req 1 + 2 + 3 combined | `part1/req1-schema/` + `req2-dimdate/` + `req3-query/` |
 | `Part2_Group11.sql` | Req 4 + 5 + 6 + 7 combined | `part2/req4-extract/` ~ `req7-execute/` |
-| `Part2_Group11.py` | Python extract or transform (min 1) | `part2/req4-extract/` or `req5-transform/` |
-| `Part2_Group11.dtsx` | SSIS package (min 1) | `part2/req4-extract/` or `req5-transform/` |
+| `Part2_Group11.py` | Python: Req 4 Extract + Req 5 Transform (Member B) | `part2/req4-extract/python/` + `part2/req5-transform/python/` |
+| `Part2_Group11.dtsx` | SSIS: Req 4 Extract + Req 5 Transform (Member C) | `part2/req4-extract/ssis/` + `part2/req5-transform/ssis/` |
 
 ## SQL File Format
 

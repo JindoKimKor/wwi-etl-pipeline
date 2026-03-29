@@ -7,9 +7,32 @@
 
 ---
 
+## What is this?
+
+WideWorldImporters is a **3NF (write-optimized)** database — designed for daily operations (orders, updates, inserts).
+Great for running the business, but terrible for answering analytical questions like "which city buys the most?"
+because the data is split across dozens of normalized tables requiring complex JOINs.
+
+This project builds an **ETL pipeline** that converts that 3NF data into a **Star Schema (read-optimized)** Data Mart (WWI_DM) — where analytical queries are fast and simple.
+
+```
+3NF (Write-optimized)                    Star Schema (Read-optimized)
+WideWorldImporters                       WWI_DM
+───────────────────                      ──────────────────
+Customers → Cities → StateProvinces      DimCustomers
+  → Countries                              CustomerName
+4 tables, 3 JOINs to get                   CityName, StateProv, Country
+  one customer's location                1 table, 0 JOINs
+
+ETL does the conversion:
+  Extract (pull from 3NF with JOINs)
+  → Transform (reshape into Star Schema form)
+  → Load (insert into DW)
+```
+
 ## Goal
 
-An automated pipeline that extracts data from WideWorldImporters (store operations DB) → loads it into an analytical Star Schema DB (WWI_DM)
+An automated pipeline that extracts data from WideWorldImporters (3NF) → loads it into an analytical Star Schema DB (WWI_DM)
 
 ```mermaid
 flowchart TB
@@ -102,10 +125,16 @@ wwi-etl-pipeline/
 │
 ├── part2/                       # Part 2: ETL Pipeline (20 marks)
 │   ├── OVERVIEW.md
-│   ├── req4-extract/            # Req 4: Extract SPs + Python (6)
-│   │   └── SPEC.md
-│   ├── req5-transform/          # Req 5: Transform SPs + SSIS (8)
-│   │   └── SPEC.md
+│   ├── req4-extract/            # Req 4: Extract (6)
+│   │   ├── SPEC.md
+│   │   ├── t-sql/               # Member A → Part2.sql
+│   │   ├── python/              # Member B → Part2.py
+│   │   └── ssis/                # Member C → Part2.dtsx
+│   ├── req5-transform/          # Req 5: Transform (8)
+│   │   ├── SPEC.md
+│   │   ├── t-sql/               # Member A → Part2.sql
+│   │   ├── python/              # Member B → Part2.py
+│   │   └── ssis/                # Member C → Part2.dtsx
 │   ├── req6-load/               # Req 6: Load SPs (4)
 │   │   └── SPEC.md
 │   └── req7-execute/            # Req 7: Execute 4 days + query (2)
@@ -124,18 +153,18 @@ wwi-etl-pipeline/
 
 ## Requirements
 
-| Phase | SPEC | Description | Marks |
-|-------|------|-------------|-------|
-| Phase 0 | [SETUP-GUIDE](part0-setup/SETUP-GUIDE.md) | Environment Setup (WWI restore, DB creation) | - |
-| **Part 1** | [OVERVIEW](part1/OVERVIEW.md) | **Star Schema Construction** | **10** |
-| Req 1 | [SPEC](part1/req1-schema/SPEC.md) | Dimensional Model tables + DimSuppliers | 5 |
-| Req 2 | [SPEC](part1/req2-dimdate/SPEC.md) | DimDate SP + WHILE Loop 5 years | 3 |
-| Req 3 | [SPEC](part1/req3-query/SPEC.md) | Compelling Query ("Predict the Future") | 2 |
-| **Part 2** | [OVERVIEW](part2/OVERVIEW.md) | **ETL Pipeline** | **20** |
-| Req 4 | [SPEC](part2/req4-extract/SPEC.md) | Extract (Stage + SP + Python + SSIS) | 6 |
-| Req 5 | [SPEC](part2/req5-transform/SPEC.md) | Transform (SCD1/2 + PreLoad + SSIS) | 8 |
-| Req 6 | [SPEC](part2/req6-load/SPEC.md) | Load (Transaction + ROLLBACK) | 4 |
-| Req 7 | [SPEC](part2/req7-execute/SPEC.md) | Execute 4 days + Verification | 2 |
+| Phase | SPEC | Description | Who | Marks |
+|-------|------|-------------|-----|-------|
+| Phase 0 | [SETUP-GUIDE](part0-setup/SETUP-GUIDE.md) | Environment Setup (WWI restore, DB creation) | All | - |
+| **Part 1** | [OVERVIEW](part1/OVERVIEW.md) | **Star Schema Construction** | **A** | **10** |
+| Req 1 | [SPEC](part1/req1-schema/SPEC.md) | Dimensional Model tables + DimSuppliers (PKs, FKs, Indexes) | A | 5 |
+| Req 2 | [SPEC](part1/req2-dimdate/SPEC.md) | DimDate SP + WHILE Loop 5 years (from CY2012) | A | 3 |
+| Req 3 | [SPEC](part1/req3-query/SPEC.md) | Compelling Query — "Predict the Future" (written in Part 1, executed in Req 7) | A | 2 |
+| **Part 2** | [OVERVIEW](part2/OVERVIEW.md) | **ETL Pipeline** | | **20** |
+| Req 4 | [SPEC](part2/req4-extract/SPEC.md) | Extract: **T-SQL** (A) + **Python** (B) + **SSIS** (C) | A + B + C | 6 |
+| Req 5 | [SPEC](part2/req5-transform/SPEC.md) | Transform: **T-SQL** (A) + **Python** (B) + **SSIS** (C) | A + B + C | 8 |
+| Req 6 | [SPEC](part2/req6-load/SPEC.md) | Load SPs T-SQL only (Transaction + ROLLBACK) | A | 4 |
+| Req 7 | [SPEC](part2/req7-execute/SPEC.md) | Run full ETL for 2013-01-01 ~ 2013-01-04 (4 days), then execute Req 3 query | A | 2 |
 
 ---
 
@@ -143,85 +172,87 @@ wwi-etl-pipeline/
 
 ### Distribution
 
-```
-        Part 1 (Schema)     Part 2 (ETL Pipeline)
-        ┌──────────┐    ┌────────┬────────┬────────┐
-Mem A:  │ Req 1,2  │    │ Req 6  │ Req 7  │ Integ. │
-        │ Tables + │    │ Load   │ Exec   │ Test   │
-        │ DimDate  │    │ SP     │ +Query │        │
-        └──────────┘    └────────┴────────┴────────┘
-Mem B:                   ┌────────────────┐
-                         │ Req 4: Extract │ T-SQL + Python
-                         │ 5 Stage SPs    │
-                         └────────────────┘
-Mem C:                   ┌─────────────────┐
-                         │ Req 5: Transform│ T-SQL + SSIS
-                         │ SCD1/2 + PreLoad│
-                         └─────────────────┘
-Req 3 (Query):           → All three together (after data is loaded)
-```
+| Member | Part 1 | Part 2 | Submission file |
+|--------|--------|--------|-----------------|
+| **A** | Req 1, 2, 3 (all T-SQL) | Req 4 T-SQL + Req 5 T-SQL + Req 6 + Req 7 | `Part1.sql` + `Part2.sql` |
+| **B** | — | Req 4 Python + Req 5 Python | `Part2.py` |
+| **C** | — | Req 4 SSIS + Req 5 SSIS | `Part2.dtsx` |
 
-### Dependencies & Contracts
+### Dependencies
 
-Each phase **provides table structures as a contract to the next phase**. Code can be written in parallel, but the contracts (table structures) must be agreed upon first.
+Part 1 must be complete before Part 2 begins. Within Part 2, each member works in parallel in their own technology (T-SQL / Python / SSIS).
+
+**Part 1 — Member A handles all of Part 1**
 
 ```mermaid
-flowchart TD
-    P0["Phase 0: Environment Setup<br>Each member locally"]
-    R1["Req 1: Star Schema<br>Member A — 5 marks"]
-    R2["Req 2: DimDate<br>Member A — 3 marks"]
-    R4["Req 4: Extract<br>Member B — 6 marks"]
-    R5["Req 5: Transform<br>Member C — 8 marks"]
-    R6["Req 6: Load<br>Member A — 4 marks"]
-    R7["Req 7: Execute<br>All members — 2 marks"]
-    R3["Req 3: Query<br>All members — 2 marks"]
+flowchart TB
+    P0["Phase 0 — Environment Setup<br>Each member: restore WideWorldImporters + CREATE DATABASE WWI_DM"]
 
-    P0 --> R1
-    R1 -- "Contract: Dim/Fact structure" --> R2
-    R1 -- "Contract: Dim/Fact structure" --> R4
-    R4 -- "Contract: Stage table structure" --> R5
-    R5 -- "Contract: PreLoad table structure" --> R6
-    R2 --> R7
-    R6 --> R7
-    R7 --> R3
+    subgraph PART1["Part 1 · Member A · 10 marks"]
+        direction TB
+        R1["Req 1: Star Schema · 5 marks"]
+        R2["Req 2: DimDate SP · 3 marks"]
+        R3["Req 3: Compelling Query · 2 marks"]
+        R1 --> R2 --> R3
+    end
+
+    P0 --> PART1
 
     style P0 fill:#616161,stroke:#424242,color:#fff
     style R1 fill:#1565c0,stroke:#0d47a1,color:#fff
     style R2 fill:#1565c0,stroke:#0d47a1,color:#fff
-    style R3 fill:#2e7d32,stroke:#1b5e20,color:#fff
-    style R4 fill:#f9a825,stroke:#f57f17,color:#000
-    style R5 fill:#e64a19,stroke:#bf360c,color:#fff
+    style R3 fill:#1565c0,stroke:#0d47a1,color:#fff
+```
+
+**Part 2 — Each member implements Req 4 and Req 5 in their own technology**
+
+```mermaid
+flowchart TB
+    subgraph A_TRACK["Member A · T-SQL"]
+        R4A["Req 4: Extract<br>All Stage SPs"]
+        R5A["Req 5: Transform<br>SCD1/2 SPs"]
+        R6["Req 6: Load SPs · 4 marks"]
+        R4A --> R5A --> R6
+    end
+
+    subgraph B_TRACK["Member B · Python"]
+        R4B["Req 4: Extract · Python"]
+        R5B["Req 5: Transform · Python"]
+        R4B --> R5B
+    end
+
+    subgraph C_TRACK["Member C · SSIS"]
+        R4C["Req 4: Extract · SSIS"]
+        R5C["Req 5: Transform · SSIS"]
+        R4C --> R5C
+    end
+
+    R7["Req 7: Run ETL for 2013-01-01~04<br>then execute Req 3 query · 2 marks"]
+
+    R6 --> R7
+    R5B --> R7
+    R5C --> R7
+
+    style R4A fill:#1565c0,stroke:#0d47a1,color:#fff
+    style R5A fill:#1565c0,stroke:#0d47a1,color:#fff
     style R6 fill:#1565c0,stroke:#0d47a1,color:#fff
     style R7 fill:#7b1fa2,stroke:#4a148c,color:#fff
+    style R4B fill:#f9a825,stroke:#f57f17,color:#000
+    style R5B fill:#f9a825,stroke:#f57f17,color:#000
+    style R4C fill:#e64a19,stroke:#bf360c,color:#fff
+    style R5C fill:#e64a19,stroke:#bf360c,color:#fff
 ```
 
-### Contracts
-
-| Contract | Defined by | Consumed by | Contents | Location |
-|----------|-----------|-------------|----------|----------|
-| Dim/Fact structure | Member A (Req 1) | All members | Table columns, PK/FK, Index | [req1 SPEC](part1/req1-schema/SPEC.md) |
-| Stage structure | Member B (Req 4) | Member C (Req 5) | Stage_* table columns/types | [req4 SPEC](part2/req4-extract/SPEC.md) |
-| PreLoad structure | Member C (Req 5) | Member A (Req 6) | PreLoad_* table columns, Sequence | [req5 SPEC](part2/req5-transform/SPEC.md) |
-
-> **Code writing** can be done in parallel once contracts are agreed. **Execution** must follow Req 4 → 5 → 6 sequentially.
-
-**Critical Path:** `Phase 0 → Req 1 → Req 4 → Req 5 → Req 6 → Req 7 → Req 3`
-
-### Timeline
-```
-Week 1: A completes Req 1,2 → shares DDL with B,C
-Week 2: B (Extract), C (Transform) in parallel. A works on Req 6
-Week 3: Merge → Integration test → Req 7 + Req 3
-```
+**Critical Path:** `Phase 0 → Part 1 (Req 1 → 2 → 3) → Part 2 (Req 4 → 5 → 6 → 7)`
 
 ---
 
 ## Submission
 
-- `Part1_Group11.sql` — DDL + DimDate + Query
-- `Part2_Group11.sql` — All ETL stored procedures
-- `Part2_Group11.py` — Python extract/transform (min 1)
-- `Part2_Group11.dtsx` — SSIS package (min 1)
+- `Part1_Group11.sql` — Req 1 (DDL) + Req 2 (DimDate SP) + Req 3 (Query)
+- `Part2_Group11.sql` — Req 4 T-SQL + Req 5 T-SQL + Req 6 + Req 7
+- `Part2_Group11.py` — Req 4 Python + Req 5 Python
+- `Part2_Group11.dtsx` — Req 4 SSIS + Req 5 SSIS
 
 **All scripts must execute without errors against WideWorldImporters + WWI_DM.**
 

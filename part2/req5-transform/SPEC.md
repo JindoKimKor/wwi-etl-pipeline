@@ -1,8 +1,8 @@
 # Req 5: Transform (8 marks)
 
-## Contract: PreLoad Table Structure (this Req defines → Req 6 consumes)
+## PreLoad Table Structure (agreed by team → input for Req 6 Load)
 
-The PreLoad tables created in this Req become the **input for Req 6 (Load)**. Member A needs to know the column names/types of the PreLoad tables to write Load SPs.
+The PreLoad tables defined here are used by **all three implementations** (T-SQL, Python, SSIS). The column structure must be agreed upon before anyone starts Load.
 
 | PreLoad Table | Consumer | Structure |
 |---------------|----------|-----------|
@@ -13,8 +13,8 @@ The PreLoad tables created in this Req become the **input for Req 6 (Load)**. Me
 | PreLoad_DimSuppliers | Load_DimSuppliers | Same structure as DimSuppliers (SCD2: EffectiveDate, EndDate, IsCurrent) |
 | PreLoad_FactSales | Load_FactSales | Same structure as FactSales (FKs converted to Surrogate Keys) |
 
-> **Input Contract (received from Req 4):** Stage_* tables → see [req4 SPEC](../req4-extract/SPEC.md)
-> **Output Contract (passed to Req 6):** PreLoad_* tables → Finalize and share this structure before starting Req 6.
+> **Input (from Req 4):** Stage_* tables → see [req4 SPEC](../req4-extract/SPEC.md)
+> **Output (to Req 6):** PreLoad_* tables
 
 ---
 
@@ -99,8 +99,9 @@ WHERE SupplierBusinessKey = @Key AND IsCurrent = 1;
 - [ ] Transform SP: Location (SCD1)
 - [ ] Transform SP: Suppliers (SCD2 — 4 cases)
 - [ ] Transform SP: Orders/Facts (surrogate key lookup + aggregation)
-- [ ] Convert 1 to Python
-- [ ] Convert 1 to SSIS package
+- [ ] **Member A:** Implement above SPs in T-SQL
+- [ ] **Member B:** Implement at least 1 Transform in Python
+- [ ] **Member C:** Implement at least 1 Transform in SSIS package
 - [ ] Empty record validation error handling
 
 ## References

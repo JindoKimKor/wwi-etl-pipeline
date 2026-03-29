@@ -6,8 +6,8 @@ Build the full ETL pipeline: WideWorldImporters → Stage → PreLoad → WWI_DM
 
 | Req | Description | Marks | Owner |
 |-----|-------------|-------|-------|
-| [Req 4](req4-extract/) | Extract — Stage Tables + SP + Python + SSIS | 6 | Member B |
-| [Req 5](req5-transform/) | Transform — PreLoad + SCD1/SCD2 + Python + SSIS | 8 | Member C |
+| [Req 4](req4-extract/) | Extract — T-SQL (A) + Python (B) + SSIS (C) | 6 | A + B + C |
+| [Req 5](req5-transform/) | Transform — T-SQL (A) + Python (B) + SSIS (C) | 8 | A + B + C |
 | [Req 6](req6-load/) | Load — Dim/Fact Load SP + Transaction | 4 | Member A |
 | [Req 7](req7-execute/) | Execute — Run 4 days + Validation Queries | 2 | Member A |
 
@@ -42,12 +42,11 @@ Req 1 (Tables) → Req 4 (Extract)
 
 ## Python / SSIS Requirements
 
-| Tool | Req 4 (Extract) | Req 5 (Transform) | Total |
-|------|-----------------|-------------------|-------|
-| **Python** | At least 1 | At least 1 | **At least 1 (4 or 5)** |
-| **SSIS** | At least 1 | At least 1 | **At least 1 (4 or 5)** |
-
-> PDF: "at least 1 python and 1 SSIS package" — 1 each required in Req 4 and 5
+| Member | Req 4 (Extract) | Req 5 (Transform) |
+|--------|-----------------|-------------------|
+| **A** | T-SQL (all SPs) | T-SQL (all SPs) |
+| **B** | Python (min 1) | Python (min 1) |
+| **C** | SSIS (min 1) | SSIS (min 1) |
 
 ## Course Materials
 
@@ -69,7 +68,7 @@ Req 1 (Tables) → Req 4 (Extract)
 ## Deliverables
 
 - `Part2_Group11.sql` — All ETL Stored Procedures
-- `Part2_Group11.py` — Python Extract or Transform (at least 1)
-- `Part2_Group11.dtsx` — SSIS Package (at least 1)
+- `Part2_Group11.py` — Python: Req 4 Extract + Req 5 Transform (Member B)
+- `Part2_Group11.dtsx` — SSIS: Req 4 Extract + Req 5 Transform (Member C)
 
 > **Note:** Exclude DimPickingStaff (PDF: "Exclude DimPickingStaff")
