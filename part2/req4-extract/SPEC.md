@@ -1,118 +1,153 @@
 # Req 4: Extract (6 marks)
 
-## Stage Table Structure (agreed by team → input for Req 5 Transform)
-
-The Stage tables defined here are used by **all three implementations** (T-SQL, Python, SSIS). The column structure must be agreed upon before anyone starts Transform.
-
-| Stage Table | Consumer | Key Columns (needs agreement) |
-|-------------|----------|-------------------------------|
-| Stage_Customers | Transform_DimCustomers (SCD1) | CustomerID, CustomerName, City, Province, Country, ... |
-| Stage_Products | Transform_DimProducts (SCD1) | StockItemID, StockItemName, Colour, UnitPrice, ... |
-| Stage_Salespeople | Transform_DimSalesPeople (SCD1) | PersonID, FullName, ... |
-| Stage_Orders | Transform_FactSales | OrderID, OrderDate, CustomerID, SalespersonID, StockItemID, Quantity, ... |
-| Stage_Suppliers | Transform_DimSuppliers (SCD2) | SupplierID, SupplierName, PhoneNumber, FaxNumber, WebsiteURL, CategoryName, ... |
-
-> **Note:** Stage columns are in denormalized form from the JOIN results of source tables. Finalize and share this structure before starting Req 5.
+> Extract = pull data from WideWorldImporters (3NF) into Stage tables in WWI_DM.
 
 ---
 
-> **BI/Data Pipeline Concepts: The "E" in ETL — Extraction**
-> - The source OLTP DB is normalized (tables are split apart). To get customer info, you need to JOIN Customers + Cities + StateProvinces + Countries
-> - **Stage Table** = An intermediate table that temporarily holds data extracted from the source. Follows the principle of "work on a copy without touching the source"
-> - Why not load directly and instead go through Stage? → Minimize load on the source DB + separate transformation work + source stays safe on failure
-> - **Python Extract** = Connect to SQL Server via pyodbc → Execute query → INSERT into Stage table (programmatic approach)
-> - **SSIS Extract** = Drag-and-drop Source → Destination connection in Visual Studio (GUI approach)
+## What is Extract?
 
-## Expected Output
+![p.6](images/week10-p6.png)
+![p.7](images/week10-p7.png)
 
-```sql
-EXEC Extract_Customers;
-SELECT TOP 10 * FROM Stage_Customers;
--- → Customer data from WideWorldImporters is JOINed and shown in a denormalized form in a single table
+In [Part B notebook](../../part1/req1-schema/part-b-explore.ipynb), we explored WideWorldImporters and found the source tables for each Dim.
+But we can't transform 3NF data directly into Star Schema — it's too messy (13+ tables, FK chains).
+
+Extract is the first step: **copy the relevant source data into flat Stage tables** in our DW database.
+
+```
+WideWorldImporters (3NF)          WWI_DM
+┌────────────────────┐            ┌──────────────────┐
+│ Customers          │            │                  │
+│ CustomerCategories │  Extract   │ Customers_Stage  │ ← flat, no PKs
+│ Cities             │ ────────→  │ Products_Stage   │ ← no constraints
+│ StateProvinces     │  (JOIN +   │ SalesPeople_Stage│ ← just raw data
+│ Countries          │   INSERT)  │ Orders_Stage     │
+│ StockItems, Colors │            │ Suppliers_Stage  │
+│ People             │            │                  │
+│ Suppliers          │            └──────────────────┘
+│ Orders, OrderLines │
+└────────────────────┘
 ```
 
-## PDF Requirements
+Why Stage tables instead of going directly to Dims?
 
-5 Stage tables + an Extract Stored Procedure for each:
+- Don't want to hold connections to source DB during long Transform operations
+- If Transform fails, source data is safe in Stage — just re-transform
+- Stage = snapshot of source at extraction time
 
-| # | Extract Target | Source Tables (JOIN) | Method |
-|---|----------------|---------------------|--------|
-| 1 | Customers | `Sales.Customers` + `Sales.CustomerCategories` + `Application.Cities` + `Application.StateProvinces` + `Application.Countries` | T-SQL |
-| 2 | Products | `Warehouse.StockItems` + `Warehouse.Colors` | T-SQL |
-| 3 | Salespeople | `Application.People` (WHERE `IsSalesperson = 1`) | T-SQL |
-| 4 | Orders | `Sales.Orders` + `Sales.OrderLines` + `Sales.Customers` + `Application.People` (`@OrderDate` parameter) | T-SQL |
-| 5 | Suppliers | `Purchasing.Suppliers` + `Purchasing.SupplierCategories` | T-SQL |
+## ETL Process Planning
 
-**At least 1 must be done in Python, and 1 in SSIS!**
+![p.8](images/week10-p8.png)
+![p.9](images/week10-p9.png)
+![p.10](images/week10-p10.png)
+![p.11](images/week10-p11.png)
 
-> **Test:** After executing each Extract SP, verify data in Stage tables. Use `'2013-01-01'` for Orders.
+## ETL Process Diagram
 
-## Python Extract Pattern (pyodbc)
+![p.12](images/week10-p12.png)
+![p.13](images/week10-p13.png)
+
+## Stage Table Design
+
+![p.16](images/week10-p16.png)
+![p.17](images/week10-p17.png)
+
+Stage tables are intentionally simple:
+
+- **No PK, no constraints, no indexes** — just columns to hold the JOINed data
+- **No surrogate keys** — Stage uses business keys from source
+- **Permissive** — NULLs allowed everywhere. Load all data first, validate later.
+
+## What to Extract (from [Part B notebook](../../part1/req1-schema/part-b-explore.ipynb))
+
+| # | Stage Table       | Source Tables (3NF)                           | What it flattens    | Used by                    |
+| - | ----------------- | --------------------------------------------- | ------------------- | -------------------------- |
+| 1 | Customers_Stage   | Customers + CustomerCategories + Cities chain | 8 tables → 1 flat  | DimCustomers + DimLocation |
+| 2 | Products_Stage    | StockItems + Colors                           | 2 tables → 1 flat  | DimProducts                |
+| 3 | SalesPeople_Stage | People (WHERE IsSalesperson=1)                | 1 table filtered    | DimSalesPeople             |
+| 4 | Orders_Stage      | Orders + OrderLines + Customers + People      | 4+ tables → 1 flat | FactSales                  |
+| 5 | Suppliers_Stage   | Suppliers + SupplierCategories                | 2 tables → 1 flat  | DimSuppliers               |
+
+Note: Customers_Stage serves **both** DimCustomers and DimLocation (one extract, two transforms).
+
+## Extract SP Pattern
+
+![p.14](images/week10-p14.png)
+![p.15](images/week10-p15.png)
+
+Every Extract SP follows the same pattern:
+
+1. `TRUNCATE` the Stage table (fresh start each run)
+2. `INSERT INTO Stage ... SELECT ... FROM source JOINs`
+3. Check `@@ROWCOUNT` — if 0, raise error (validation)
+
+---
+
+## T-SQL (Member A)
+
+5 Stored Procedures, one per Stage table.
+
+**Customers_Extract** — class example:
+
+![p.18](images/week10-p18.png)
+
+- CTE for Cities chain (Cities + StateProvinces + Countries)
+- JOIN Customers + CustomerCategories + CTE (delivery) + CTE (postal)
+- INSERT INTO Customers_Stage
+
+**Orders_Stage + Extract** — class example:
+
+![p.19](images/week10-p19.png)
+
+**Products_Extract, SalesPeople_Extract, Orders_Extract** — homework:
+
+![p.20](images/week10-p20.png)
+
+**Suppliers_Extract** — assignment addition (not in class):
+
+- Suppliers + SupplierCategories JOIN
+- Columns: SupplierName, PhoneNumber, FaxNumber, WebsiteURL, SupplierCategoryName
+- Follow the same pattern as Customers_Extract
+
+Test: Execute each SP, then `SELECT TOP 5 * FROM [Stage table]`. Use '2013-01-01' for Orders.
+
+---
+
+## Python (Member B)
+
+Same logic as T-SQL, but using pyodbc:
+
+1. Connect to WideWorldImporters (source) — read data with SELECT
+2. Connect to WWI_DM (target) — TRUNCATE Stage table, INSERT rows
+3. Same JOINs, same columns, just executed via Python
 
 ```python
+# Pattern (from Lab 6):
 import pyodbc
+conn_source = pyodbc.connect(...)  # WideWorldImporters
+conn_target = pyodbc.connect(...)  # WWI_DM
 
-connection_string = (
-    r"DRIVER={ODBC Driver 17 for SQL Server};"
-    r"SERVER=localhost;"
-    r"DATABASE=WideWorldImporters;"
-    r"Trusted_Connection=yes;"
-)
+cursor_source = conn_source.cursor()
+cursor_source.execute("SELECT ... FROM ... JOIN ...")
+rows = cursor_source.fetchall()
 
-conn = pyodbc.connect(connection_string)
-cursor = conn.cursor()
-
-# Read data from Source
-cursor.execute("""
-    SELECT c.CustomerID, c.CustomerName, ...
-    FROM Sales.Customers c
-    JOIN Sales.CustomerCategories cc ON c.CustomerCategoryID = cc.CustomerCategoryID
-    JOIN Application.Cities ci ON c.DeliveryCityID = ci.CityID
-    ...
-""")
-rows = cursor.fetchall()
-
-# INSERT into Stage (WWI_DM connection)
-conn_dm = pyodbc.connect(
-    r"DRIVER={ODBC Driver 17 for SQL Server};"
-    r"SERVER=localhost;"
-    r"DATABASE=WWI_DM;"
-    r"Trusted_Connection=yes;"
-)
-cursor_dm = conn_dm.cursor()
-cursor_dm.execute("TRUNCATE TABLE Stage_Customers;")
+cursor_target = conn_target.cursor()
+cursor_target.execute("TRUNCATE TABLE Customers_Stage")
 for row in rows:
-    cursor_dm.execute("INSERT INTO Stage_Customers VALUES (?, ?, ...)", row)
-conn_dm.commit()
+    cursor_target.execute("INSERT INTO Customers_Stage VALUES (?, ?, ...)", row)
+conn_target.commit()
 ```
 
-## SSIS Extract Guide
+At least 1 Extract must be implemented in Python.
 
-1. VS → Integration Services Project → Data Flow Task
-2. **OLE DB Source:** WideWorldImporters connection → JOIN query as SQL Command
-3. **OLE DB Destination:** WWI_DM connection → Stage table
-4. Connection Manager: `Microsoft OLE DB Driver 19 for SQL Server` + Trust Server Certificate
+---
 
-## Tasks
+## SSIS (Member C)
 
-- [ ] CREATE TABLE for 5 Stage tables
-- [ ] Write Extract SP: Customers
-- [ ] Write Extract SP: Products
-- [ ] Write Extract SP: Salespeople
-- [ ] Write Extract SP: Orders (date parameter)
-- [ ] Write Extract SP: Suppliers
-- [ ] **Member A:** Implement above SPs in T-SQL
-- [ ] **Member B:** Implement at least 1 Extract in Python (pyodbc)
-- [ ] **Member C:** Implement at least 1 Extract in SSIS package
-- [ ] Test execution for each (use '2013-01-01' for Orders)
+Same logic, but using Visual Studio GUI:
 
-## References
+1. Create Integration Services Project
+2. Data Flow Task: OLE DB Source (WideWorldImporters query) → OLE DB Destination (Stage table)
+3. Connection Manager: localhost, Trust Server Certificate
 
-- **Week 10 PDF:** `resources/course-material/PROG3240_week10_etl-using-t-sql-and-ssis.pdf`
-  - Extract SP patterns, Stage table structure
-- **Lab 6 Notebook:** `resources/labs/lab-6/MSSQL_Connect.ipynb`
-  - pyodbc connection, query execution, INSERT patterns
-- **Lab 6 Review:** `resources/labs/lab-6/lab-6-review.md`
-  - pyodbc workflow summary
-- **Video:** [SQL ETL Tutorial for Beginners](https://www.youtube.com/watch?v=uy8-0rX-RV8)
-- **Video:** [Create an ETL package with SSIS!](https://www.youtube.com/watch?v=msCJxaA63IA)
+At least 1 Extract must be implemented in SSIS.

@@ -10,6 +10,11 @@ Build a Star Schema-based Data Warehouse + load date dimension + analytical quer
 | [Req 2](req2-dimdate/) | DimDate_Load SP + WHILE Loop 5 years         | 3     | [dimdate-load.sql](req2-dimdate/dimdate-load.sql)       |
 | [Req 3](req3-query/)   | Compelling Query — "Predict the Future"     | 2     | [compelling-query.sql](req3-query/compelling-query.sql) |
 
+## Prerequisites
+
+- Phase 0 complete: SQL Server Enterprise Developer installed, WideWorldImporters restored, WWI_DM database created
+- See [SETUP-GUIDE](../part0-setup/SETUP-GUIDE.md)
+
 ## Dependencies
 
 ```
@@ -21,7 +26,7 @@ Phase 0 (Environment Setup)
 
 ## Deliverable
 
-`submission/Part1_Group11.sql` — Req 1 + 2 + 3 combined into a single file.
+[Part1_Group11.sql](../submission/Part1_Group11.sql) — Req 1 + 2 + 3 combined into a single file.
 
 ## Course Materials
 

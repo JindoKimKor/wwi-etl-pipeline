@@ -1,114 +1,144 @@
 # Req 5: Transform (8 marks)
 
-## PreLoad Table Structure (agreed by team → input for Req 6 Load)
-
-The PreLoad tables defined here are used by **all three implementations** (T-SQL, Python, SSIS). The column structure must be agreed upon before anyone starts Load.
-
-| PreLoad Table | Consumer | Structure |
-|---------------|----------|-----------|
-| PreLoad_DimCustomers | Load_DimCustomers | Same structure as DimCustomers (includes Surrogate Key) |
-| PreLoad_DimProducts | Load_DimProducts | Same structure as DimProducts |
-| PreLoad_DimSalesPeople | Load_DimSalesPeople | Same structure as DimSalesPeople |
-| PreLoad_DimLocation | Load_DimLocation | Same structure as DimLocation |
-| PreLoad_DimSuppliers | Load_DimSuppliers | Same structure as DimSuppliers (SCD2: EffectiveDate, EndDate, IsCurrent) |
-| PreLoad_FactSales | Load_FactSales | Same structure as FactSales (FKs converted to Surrogate Keys) |
-
-> **Input (from Req 4):** Stage_* tables → see [req4 SPEC](../req4-extract/SPEC.md)
-> **Output (to Req 6):** PreLoad_* tables
+> Transform = convert Stage data (source format) into PreLoad data (Star Schema format).
 
 ---
 
-> **BI/Data Pipeline Concepts: The "T" in ETL — Transformation + Slowly Changing Dimensions**
-> - **SCD Type 1 (Overwrite):** What if a customer's phone number changes? → Simply UPDATE to the latest value. Previous value is not kept
-> - **SCD Type 2 (History Preservation):** What if supplier info changes? → "Expire" the previous record and add a new one. Why? Enables point-in-time analysis like "What were the sales when this supplier was at address A last year?"
-> - **Surrogate Key** = An artificial key auto-generated in the DW (1,2,3...). Mapped to the source's Business Key (e.g., customer number)
-> - **PreLoad Table** = An intermediate table that holds Transform results. Stage (source form) → PreLoad (DW form) → Dim (final)
+## What is Transform?
 
-## Expected Output
+Extract gave us flat copies of source data in Stage tables. But Stage data still uses **business keys** (CustomerName, StockItemName) — our Star Schema uses **surrogate keys** (CustomerKey, ProductKey).
 
-```sql
-SELECT * FROM PreLoad_DimSuppliers;
--- → Supplier data from Stage is transformed into DW form
--- → SupplierKey assigned, SCD2 columns EffectiveDate/EndDate/IsCurrent set
+Transform does:
+1. **Map business keys → surrogate keys** (look up or create)
+2. **Handle SCD** (Type 1: overwrite, Type 2: expire old + add new)
+3. **Aggregate measures** for FactSales
+4. Write results into **PreLoad tables** (same structure as final Dim/Fact, but temporary)
 
--- SCD2 test: Modify supplier info then run Transform again
--- → Same supplier exists as 2 rows (previous version + current version)
+```
+WWI_DM
+┌──────────────────┐              ┌──────────────────┐              ┌──────────────────┐
+│ Customers_Stage  │  Transform   │ Customers_Preload│    Load      │ DimCustomers     │
+│ (business keys)  │ ──────────→  │ (surrogate keys) │ ──────────→  │ (final)          │
+│ CustomerName     │  SCD logic   │ CustomerKey      │              │ CustomerKey      │
+│ CityName         │  + key map   │ CustomerName     │              │ CustomerName     │
+└──────────────────┘              └──────────────────┘              └──────────────────┘
 ```
 
-## PDF Requirements
+## PreLoad Table Design
 
-### SCD Type 1 Dimensions (4)
+![p.21](images/week10-p21.png)
+![p.22](images/week10-p22.png)
+![p.23](images/week10-p23.png)
 
-| Dim | Method | Core Logic |
-|-----|--------|------------|
-| DimCustomers | SCD Type 1 | Assign new key via Sequence, update if existing |
-| DimProducts | SCD Type 1 | Same pattern |
-| DimSalesPeople | SCD Type 1 | Same pattern |
-| DimLocation | SCD Type 1 | Same pattern |
+PreLoad tables = **same structure as destination Dim/Fact**, but:
+- No FK constraints (just data staging)
+- Keys are NOT IDENTITY — filled by Transform logic (Sequence or existing key)
+- Temporary — TRUNCATEd at the start of each Transform
 
-**Sequence Usage:**
+## Sequence — why not IDENTITY?
+
+![p.24](images/week10-p24.png)
+
+Dim tables use IDENTITY for surrogate keys. But PreLoad tables can't — because:
+- We TRUNCATE PreLoad every run
+- We need to mix **existing** keys (already in DW) with **new** keys (just created)
+- IDENTITY would reset or conflict
+
+Solution: **Sequence** — a standalone counter that isn't affected by TRUNCATE:
 ```sql
-CREATE SEQUENCE dbo.Seq_DimCustomers START WITH 1 INCREMENT BY 1;
-
--- New record → NEXT VALUE FOR dbo.Seq_DimCustomers
--- Existing record → Keep existing surrogate key
+CREATE SEQUENCE dbo.LocationKey START WITH 1;
+-- New record: NEXT VALUE FOR dbo.LocationKey → gets next number
+-- Existing record: use the surrogate key already in the Dim table
 ```
 
-### SCD Type 2 Dimension (DimSuppliers) — Key Requirement!
+## SCD in Transform
 
-**4 Cases:**
+This is where SCD types actually matter:
+
+### Type 1 (DimLocation, DimSalesPeople)
+
+![p.25](images/week10-p25.png)
+![p.26](images/week10-p26.png)
+
+- New record (not in DW)? → Sequence for new key, INSERT
+- Existing record? → Use existing surrogate key, overwrite attributes
+
+### Type 2 (DimCustomers, DimProducts, DimSuppliers)
+
+![p.29](images/week10-p29.png)
+![p.30](images/week10-p30.png)
+![p.31](images/week10-p31.png)
+
+4 cases to handle:
 
 | Case | Condition | Action |
 |------|-----------|--------|
-| a. Match, no change | Stage ∩ DW, attributes identical | Keep as-is (add to PreLoad unchanged) |
-| b. Match, changed | Stage ∩ DW, non-key attributes changed | **Add new record + expire existing record** |
-| c. New record | Exists in Stage but not in DW | **Create new record** |
-| d. Missing record | Exists in DW but not in Stage | **Expire existing record** |
+| a | Match, no attribute change | Keep as-is (add to PreLoad unchanged) |
+| b | Match, attribute changed | New record (Sequence) + expire old (set EndDate) |
+| c | New (not in DW) | New record (Sequence), StartDate = today |
+| d | Missing (in DW but not in Stage) | Expire (set EndDate) |
 
-```sql
--- Expire = Set EndDate + IsCurrent = 0
-UPDATE DimSuppliers
-SET EndDate = GETDATE(), IsCurrent = 0
-WHERE SupplierBusinessKey = @Key AND IsCurrent = 1;
-```
+> "always use EndDate IS NULL to ensure that we are always working with the current record"
 
-### FactSales Transform
+### MERGE statement (alternative approach)
 
-- Look up Surrogate Keys using Business Keys from Stage_Orders data
-- INSERT into PreLoad_FactSales using the Surrogate Keys
-- Same measure aggregation approach as in class notes
+![p.27](images/week10-p27.png)
+![p.28](images/week10-p28.png)
 
-### Validation
+### PreLoad tables for remaining transforms
 
-- Handle error if Stage tables are empty (RAISERROR or PRINT)
+![p.32](images/week10-p32.png)
 
-## SSIS Transform Guide
+### Orders Transform (FactSales)
 
-1. Data Flow Task → **Lookup** component for Surrogate Key mapping
-2. **Conditional Split** to branch on Match/No Match
-3. **OLE DB Command** for UPDATE (expiration handling)
-4. **OLE DB Destination** for new record INSERT
+![p.33](images/week10-p33.png)
 
-## Tasks
+- Look up surrogate keys from PreLoad tables using business keys
+- Aggregate measures: SUM(Quantity), AVG(UnitPrice), AVG(TaxRate), SUM(TotalBeforeTax), SUM(TotalAfterTax)
+- DateKey = YYYYMMDD Smart Key (calculated, not looked up)
 
-- [ ] CREATE TABLE for PreLoad tables (same structure as each Dim)
-- [ ] Create Sequences (for each SCD Type 1 Dim)
-- [ ] Transform SP: Customers (SCD1)
-- [ ] Transform SP: Products (SCD1)
-- [ ] Transform SP: Salespeople (SCD1)
-- [ ] Transform SP: Location (SCD1)
-- [ ] Transform SP: Suppliers (SCD2 — 4 cases)
-- [ ] Transform SP: Orders/Facts (surrogate key lookup + aggregation)
-- [ ] **Member A:** Implement above SPs in T-SQL
-- [ ] **Member B:** Implement at least 1 Transform in Python
-- [ ] **Member C:** Implement at least 1 Transform in SSIS package
-- [ ] Empty record validation error handling
+### Homework
 
-## References
+![p.36](images/week10-p36.png)
 
-- **Week 9 PDF:** `resources/course-material/PROG3240_week9_slowly-changing-dimension-and-etl.pdf`
-  - SCD Type 1/2 concepts, case explanations
-- **Week 10 PDF:** `resources/course-material/PROG3240_week10_etl-using-t-sql-and-ssis.pdf`
-  - Transform SP patterns, PreLoad table structure, Sequence usage
-- **Video:** [SCD Type 2 in SSIS Using Lookup](https://www.youtube.com/watch?v=7uj463csru0)
-- **Lab 6:** `resources/labs/lab-6/MSSQL_Connect.ipynb` — Reference for Python implementation
+---
+
+## T-SQL (Member A)
+
+6 Transform SPs + PreLoad tables + Sequences:
+
+**Sequences:**
+- `dbo.LocationKey`, `dbo.CustomerKey`, `dbo.ProductKey`, `dbo.SalespersonKey`, `dbo.SupplierKey`
+
+**Location_Transform** (Type 1) — class example at p.25
+**Customers_Transform** (Type 2) — class example at p.29-30
+**Products_Transform** (Type 2) — homework, same pattern as Customers
+**SalesPeople_Transform** (Type 1) — homework, same pattern as Location
+**Suppliers_Transform** (Type 2) — assignment addition, same pattern as Customers
+**Orders_Transform** (FactSales) — class example at p.33
+
+Validation: if Stage table is empty, RAISERROR or PRINT error message.
+
+---
+
+## Python (Member B)
+
+Same Transform logic via pyodbc:
+1. Read from Stage table
+2. Read existing Dim records from DW
+3. Compare business keys — determine which case (a/b/c/d for Type 2)
+4. Write to PreLoad table
+
+At least 1 Transform must be implemented in Python.
+
+---
+
+## SSIS (Member C)
+
+Transform in SSIS uses:
+- **Lookup** component — match Stage records to existing Dim records by business key
+- **Conditional Split** — branch on match/no-match
+- **OLE DB Command** — UPDATE for expiration
+- **OLE DB Destination** — INSERT new records
+
+At least 1 Transform must be implemented in SSIS.

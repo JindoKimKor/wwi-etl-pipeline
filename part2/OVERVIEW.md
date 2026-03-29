@@ -4,17 +4,17 @@ Build the full ETL pipeline: WideWorldImporters → Stage → PreLoad → WWI_DM
 
 ## Requirements Overview
 
-| Req | Description | Marks | Owner |
-|-----|-------------|-------|-------|
-| [Req 4](req4-extract/) | Extract — T-SQL (A) + Python (B) + SSIS (C) | 6 | A + B + C |
-| [Req 5](req5-transform/) | Transform — T-SQL (A) + Python (B) + SSIS (C) | 8 | A + B + C |
-| [Req 6](req6-load/) | Load — Dim/Fact Load SP + Transaction | 4 | Member A |
-| [Req 7](req7-execute/) | Execute — Run 4 days + Validation Queries | 2 | Member A |
+| Req | Description | Marks | Owner | SPEC |
+|-----|-------------|-------|-------|------|
+| [Req 4](req4-extract/) | Extract — T-SQL (A) + Python (B) + SSIS (C) | 6 | A + B + C | [SPEC](req4-extract/SPEC.md) |
+| [Req 5](req5-transform/) | Transform — T-SQL (A) + Python (B) + SSIS (C) | 8 | A + B + C | [SPEC](req5-transform/SPEC.md) |
+| [Req 6](req6-load/) | Load — Dim/Fact Load SP + Transaction | 4 | Member A | [SPEC](req6-load/SPEC.md) |
+| [Req 7](req7-execute/) | Run ETL for 2013-01-01~04 + Req 3 query | 2 | Member A | [SPEC](req7-execute/SPEC.md) |
 
 ## Full ETL Flow
 
 ```
-WideWorldImporters (OLTP)          WWI_DM (Star Schema)
+WideWorldImporters (3NF)           WWI_DM (Star Schema)
 ┌──────────────────┐               ┌──────────────────┐
 │ Sales.Orders     │               │                  │
 │ Sales.Customers  │  ┌─────────┐  │ DimCustomers     │
@@ -31,16 +31,22 @@ WideWorldImporters (OLTP)          WWI_DM (Star Schema)
                   (Req 4)    (Req 5)     (Req 6)
 ```
 
+## Prerequisites
+
+- Phase 0 complete: SQL Server Enterprise Developer installed, WideWorldImporters restored, WWI_DM database created
+- Part 1 complete: All Dim/Fact tables created (Req 1), DimDate populated (Req 2)
+- See [Part 1 OVERVIEW](../part1/OVERVIEW.md)
+
 ## Dependencies
 
 ```
 Req 1 (Tables) → Req 4 (Extract)
                     └→ Req 5 (Transform)
                           └→ Req 6 (Load)
-                                └→ Req 7 (Execute 4 days)
+                                └→ Req 7 (Execute 4 days + Req 3 query)
 ```
 
-## Python / SSIS Requirements
+## Member Distribution
 
 | Member | Req 4 (Extract) | Req 5 (Transform) |
 |--------|-----------------|-------------------|
@@ -48,27 +54,16 @@ Req 1 (Tables) → Req 4 (Extract)
 | **B** | Python (min 1) | Python (min 1) |
 | **C** | SSIS (min 1) | SSIS (min 1) |
 
+Req 6, 7 = T-SQL only (Member A).
+
 ## Course Materials
 
 - **Week 9 PDF:** SCD Type 1 & 2 Concepts
-  - `resources/course-material/PROG3240_week9_slowly-changing-dimension-and-etl.pdf`
-- **Week 10 PDF:** T-SQL ETL Full Pattern (Extract → Transform → Load)
-  - `resources/course-material/PROG3240_week10_etl-using-t-sql-and-ssis.pdf`
+- **Week 10 PDF:** T-SQL ETL Full Pattern (Extract → Transform → Load) + SSIS setup
 - **Lab 6:** Python ↔ SQL Server Connection (pyodbc)
-  - `resources/labs/lab-6/MSSQL_Connect.ipynb`
-  - `resources/labs/lab-6/lab-6-review.md`
-
-## Reference Videos
-
-- [Install SSIS in Visual Studio: Build Your First ETL Task](https://www.youtube.com/watch?v=oqG0g0W9EuU)
-- [Create an ETL package with SSIS! // step-by-step](https://www.youtube.com/watch?v=msCJxaA63IA)
-- [SCD Type 2 in SSIS Using Lookup](https://www.youtube.com/watch?v=7uj463csru0)
-- [SQL ETL Tutorial for Beginners](https://www.youtube.com/watch?v=uy8-0rX-RV8)
 
 ## Deliverables
 
-- `Part2_Group11.sql` — All ETL Stored Procedures
+- `Part2_Group11.sql` — All ETL Stored Procedures (Req 4 + 5 + 6 + 7)
 - `Part2_Group11.py` — Python: Req 4 Extract + Req 5 Transform (Member B)
 - `Part2_Group11.dtsx` — SSIS: Req 4 Extract + Req 5 Transform (Member C)
-
-> **Note:** Exclude DimPickingStaff (PDF: "Exclude DimPickingStaff")

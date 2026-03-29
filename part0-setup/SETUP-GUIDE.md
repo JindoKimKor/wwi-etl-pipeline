@@ -25,7 +25,7 @@ SELECT SERVERPROPERTY('Edition');
 -- Expected: Enterprise Developer Edition (64-bit)
 ```
 
-If you have Standard Developer installed, use SQL Server Installation Center → **Maintenance → Edition Upgrade → Enterprise Developer**.
+If you have Standard Developer installed, **Edition Upgrade does not work** — uninstall SQL Server completely and reinstall as Enterprise Developer.
 
 ---
 

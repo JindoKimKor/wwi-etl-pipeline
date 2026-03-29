@@ -2,12 +2,12 @@
 
 ## Files to Submit (4 files, NO ZIP)
 
-| File | Content | Source |
+| File | Content | Status |
 |------|---------|--------|
-| `Part1_Group11.sql` | Req 1 + 2 + 3 combined | `part1/req1-schema/` + `req2-dimdate/` + `req3-query/` |
-| `Part2_Group11.sql` | Req 4 + 5 + 6 + 7 combined | `part2/req4-extract/` ~ `req7-execute/` |
-| `Part2_Group11.py` | Python: Req 4 Extract + Req 5 Transform (Member B) | `part2/req4-extract/python/` + `part2/req5-transform/python/` |
-| `Part2_Group11.dtsx` | SSIS: Req 4 Extract + Req 5 Transform (Member C) | `part2/req4-extract/ssis/` + `part2/req5-transform/ssis/` |
+| [Part1_Group11.sql](Part1_Group11.sql) | Req 1 + 2 + 3 combined | ✅ Done |
+| `Part2_Group11.sql` | Req 4 + 5 + 6 + 7 combined | ❌ Not started |
+| `Part2_Group11.py` | Python: Req 4 Extract + Req 5 Transform (Member B) | ❌ Not started |
+| `Part2_Group11.dtsx` | SSIS: Req 4 Extract + Req 5 Transform (Member C) | ❌ Not started |
 
 ## SQL File Format
 

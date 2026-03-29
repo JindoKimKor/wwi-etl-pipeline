@@ -50,6 +50,7 @@ JOIN dbo.DimSalesPeople sp ON f.SalespersonKey = sp.SalespersonKey
 JOIN dbo.DimDate d         ON f.DateKey     = d.DateKey
 GROUP BY l.CityName, l.StateProvCode, s.FullName, s.SupplierCategoryName
 ORDER BY TotalRevenue DESC;
+GO
 
 -- ============================================================
 -- Query 2: Product Brand Trend Over Time
@@ -94,6 +95,7 @@ JOIN dbo.DimSuppliers s    ON f.SupplierKey = s.SupplierKey
 WHERE p.ProductBrand IS NOT NULL
 GROUP BY d.CYear, d.CMonth, d.MonthName, p.ProductBrand
 ORDER BY p.ProductBrand, d.CYear, d.CMonth;
+GO
 
 -- ============================================================
 -- Query 3: Salesperson Efficiency by Customer Category

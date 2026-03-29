@@ -104,11 +104,11 @@ GO
 -- Business key: FullName (same pattern as DimCustomers using CustomerName)
 CREATE TABLE dbo.DimSuppliers (
     SupplierKey             INT             NOT NULL IDENTITY(1,1),
-    FullName                NVARCHAR(100)   NOT NULL,
-    PhoneNumber             NVARCHAR(20)    NOT NULL,
-    FaxNumber               NVARCHAR(20)    NOT NULL,
-    WebsiteURL              NVARCHAR(256)   NOT NULL,
-    SupplierCategoryName    NVARCHAR(50)    NOT NULL,
+    FullName                NVARCHAR(100)   NULL,
+    PhoneNumber             NVARCHAR(20)    NULL,
+    FaxNumber               NVARCHAR(20)    NULL,
+    WebsiteURL              NVARCHAR(256)   NULL,
+    SupplierCategoryName    NVARCHAR(50)    NULL,
     StartDate               DATE            NOT NULL,
     EndDate                 DATE            NULL,
     CONSTRAINT PK_DimSuppliers PRIMARY KEY (SupplierKey)

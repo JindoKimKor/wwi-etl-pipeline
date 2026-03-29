@@ -105,11 +105,11 @@ GO
 -- Business key: FullName (same pattern as DimCustomers using CustomerName)
 CREATE TABLE dbo.DimSuppliers (
     SupplierKey             INT             NOT NULL IDENTITY(1,1),
-    FullName                NVARCHAR(100)   NOT NULL,
-    PhoneNumber             NVARCHAR(20)    NOT NULL,
-    FaxNumber               NVARCHAR(20)    NOT NULL,
-    WebsiteURL              NVARCHAR(256)   NOT NULL,
-    SupplierCategoryName    NVARCHAR(50)    NOT NULL,
+    FullName                NVARCHAR(100)   NULL,
+    PhoneNumber             NVARCHAR(20)    NULL,
+    FaxNumber               NVARCHAR(20)    NULL,
+    WebsiteURL              NVARCHAR(256)   NULL,
+    SupplierCategoryName    NVARCHAR(50)    NULL,
     StartDate               DATE            NOT NULL,
     EndDate                 DATE            NULL,
     CONSTRAINT PK_DimSuppliers PRIMARY KEY (SupplierKey)
@@ -251,6 +251,7 @@ JOIN dbo.DimSalesPeople sp ON f.SalespersonKey = sp.SalespersonKey
 JOIN dbo.DimDate d         ON f.DateKey     = d.DateKey
 GROUP BY l.CityName, l.StateProvCode, s.FullName, s.SupplierCategoryName
 ORDER BY TotalRevenue DESC;
+GO
 
 -- ============================================================
 -- Query 2: Product Brand Trend Over Time
@@ -295,6 +296,7 @@ JOIN dbo.DimSuppliers s    ON f.SupplierKey = s.SupplierKey
 WHERE p.ProductBrand IS NOT NULL
 GROUP BY d.CYear, d.CMonth, d.MonthName, p.ProductBrand
 ORDER BY p.ProductBrand, d.CYear, d.CMonth;
+GO
 
 -- ============================================================
 -- Query 3: Salesperson Efficiency by Customer Category
