@@ -2,12 +2,12 @@
 
 ## Files to Submit (4 files, NO ZIP)
 
-| File | Content | Status |
-|------|---------|--------|
-| [Part1_Group11.sql](Part1_Group11.sql) | Req 1 + 2 + 3 combined | ✅ Done |
-| `Part2_Group11.sql` | Req 4 + 5 + 6 + 7 combined | ❌ Not started |
-| `Part2_Group11.py` | Python: Req 4 Extract + Req 5 Transform (Member B) | ❌ Not started |
-| `Part2_Group11.dtsx` | SSIS: Req 4 Extract + Req 5 Transform (Member C) | ❌ Not started |
+| File                                | Content                                            | Status         |
+| ----------------------------------- | -------------------------------------------------- | -------------- |
+| [Part1_Group11.sql](Part1_Group11.sql) | Req 1 + 2 + 3 combined                             | ✅ Done        |
+| `Part2_Group11.sql`               | Req 4 + 5 + 6 + 7 combined                         | ❌ Not started |
+| `Part2_Group11.py`                | Python: Req 4 Extract + Req 5 Transform (Member B) | ❌ Not started |
+| `Part2_Group11.dtsx`              | SSIS: Req 4 Extract + Req 5 Transform (Member C)   | ❌ Not started |
 
 ## SQL File Format
 
@@ -29,25 +29,29 @@ Each requirement must be clearly separated with comments:
 Professor will run the script **top-to-bottom in one go**. He will NOT debug errors.
 
 ### Part1_Group11.sql
-- [ ] Run against fresh `WWI_DM` database (DROP + CREATE)
-- [ ] Req 1 → 2 → 3 executes in order without errors
-- [ ] All tables created with correct PK/FK/Index
-- [ ] DimDate populated (~1,827 rows)
-- [ ] Req 3 query runs (may return 0 rows before Part 2 — that's OK)
+
+- [X] Run against fresh `WWI_DM` database (DROP + CREATE)
+- [X] Req 1 → 2 → 3 executes in order without errors
+- [X] All tables created with correct PK/FK/Index
+- [X] DimDate populated (~1,827 rows)
+- [X] Req 3 query runs (may return 0 rows before Part 2 — that's OK)
 
 ### Part2_Group11.sql
+
 - [ ] Execution order: Stage CREATE → Extract SP → PreLoad CREATE → Sequence CREATE → Transform SP → Load SP → Req 7 execution
 - [ ] All `CREATE OR ALTER PROCEDURE` (not just `CREATE`) to avoid errors on re-run
 - [ ] 4-day ETL loop runs (2013-01-01 ~ 2013-01-04)
 - [ ] Req 3 query re-run shows actual data
 
 ### Part2_Group11.py
+
 - [ ] Runs independently (`python Part2_Group11.py`)
 - [ ] Connection string uses `localhost` + Windows Authentication
 - [ ] Stage/PreLoad table names match the `.sql` file
 - [ ] `pyodbc` is the only external dependency
 
 ### Part2_Group11.dtsx
+
 - [ ] Opens in Visual Studio without errors
 - [ ] Connection Manager points to `localhost`
 - [ ] Data Flow Task executes successfully
