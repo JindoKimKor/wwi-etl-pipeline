@@ -5,7 +5,6 @@ GO
 -- DROP STAGING TABLES IF THEY EXIST
 -- ============================================================
 
-DROP TABLE IF EXISTS dbo.Location_Stage;
 DROP TABLE IF EXISTS dbo.Customers_Stage;
 DROP TABLE IF EXISTS dbo.Products_Stage;
 DROP TABLE IF EXISTS dbo.SalesPeople_Stage;
@@ -17,16 +16,6 @@ GO
 -- CREATE FLAT STAGING TABLES
 -- ============================================================
 
--- Staging for Location
-CREATE TABLE dbo.Location_Stage (
-    CityName            NVARCHAR(50)    NULL,
-    StateProvCode       NVARCHAR(5)     NULL,
-    StateProvName       NVARCHAR(50)    NULL,
-    CountryName         NVARCHAR(60)    NULL,
-    CountryFormalName   NVARCHAR(60)    NULL
-);
-GO
-
 -- Staging for Customers
 CREATE TABLE dbo.Customers_Stage (
     CustomerName            NVARCHAR(100)   NULL,
@@ -36,7 +25,13 @@ CREATE TABLE dbo.Customers_Stage (
     DeliveryCountryName     NVARCHAR(50)    NULL,
     PostalCityName          NVARCHAR(50)    NULL,
     PostalStateProvCode     NVARCHAR(5)     NULL,
-    PostalCountryName       NVARCHAR(50)    NULL
+    PostalCountryName       NVARCHAR(50)    NULL,
+    -- Location fields
+    CityName                NVARCHAR(50)    NULL,
+    StateProvCode           NVARCHAR(5)     NULL,
+    StateProvName           NVARCHAR(50)    NULL,
+    CountryName             NVARCHAR(60)    NULL,
+    CountryFormalName       NVARCHAR(60)    NULL
 );
 GO
 
