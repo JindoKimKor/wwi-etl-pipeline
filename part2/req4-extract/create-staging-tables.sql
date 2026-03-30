@@ -25,13 +25,7 @@ CREATE TABLE dbo.Customers_Stage (
     DeliveryCountryName     NVARCHAR(50)    NULL,
     PostalCityName          NVARCHAR(50)    NULL,
     PostalStateProvCode     NVARCHAR(5)     NULL,
-    PostalCountryName       NVARCHAR(50)    NULL,
-    -- Location fields
-    CityName                NVARCHAR(50)    NULL,
-    StateProvCode           NVARCHAR(5)     NULL,
-    StateProvName           NVARCHAR(50)    NULL,
-    CountryName             NVARCHAR(60)    NULL,
-    CountryFormalName       NVARCHAR(60)    NULL
+    PostalCountryName       NVARCHAR(50)    NULL
 );
 GO
 
