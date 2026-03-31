@@ -18,13 +18,13 @@ GO
 
 -- Location Preload
 CREATE TABLE dbo.Location_Preload (
-    CityKey             INT             NOT NULL,
+    LocationKey         INT             NOT NULL,
     CityName            NVARCHAR(50)    NULL,
     StateProvCode       NVARCHAR(5)     NULL,
     StateProvName       NVARCHAR(50)    NULL,
     CountryName         NVARCHAR(60)    NULL,
     CountryFormalName   NVARCHAR(60)    NULL,
-    CONSTRAINT PK_Cities_Preload PRIMARY KEY CLUSTERED (CityKey)
+    CONSTRAINT PK_Location_Preload PRIMARY KEY CLUSTERED (LocationKey)
 );
 GO
 
@@ -88,7 +88,7 @@ GO
 -- Orders Preload (Fact Table)
 CREATE TABLE dbo.Orders_Preload (
     CustomerKey     INT             NOT NULL,
-    CityKey         INT             NOT NULL,
+    LocationKey     INT             NOT NULL,
     ProductKey      INT             NOT NULL,
     SalespersonKey  INT             NOT NULL,
     SupplierKey     INT             NOT NULL, 
