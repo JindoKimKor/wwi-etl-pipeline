@@ -1,5 +1,5 @@
 # ============================================================
-# Part 2: ETL Pipeline — Python (Member B)
+# Part 2: ETL Pipeline — Samuel
 # Group 11 | PROG3240 Winter 2026
 # ============================================================
 # Requirement 4: Extract (Python) — Customers + Suppliers
@@ -139,25 +139,6 @@ def suppliers_extract():
         print(f"{len(rows)} rows loaded.")
     finally:
         src.close()
-        tgt.close()
-
-
-# ============================================================
-# SEQUENCES — created here so Python runs standalone
-# (Jindo's SQL also creates these; IF NOT EXISTS makes it safe)
-# ============================================================
-
-def ensure_sequences():
-    tgt = get_target()
-    try:
-        cur = tgt.cursor()
-        for seq in ["CustomerKey", "SupplierKey", "LocationKey", "ProductKey", "SalespersonKey"]:
-            cur.execute(f"""
-                IF NOT EXISTS (SELECT 1 FROM sys.sequences WHERE name = '{seq}')
-                    EXEC('CREATE SEQUENCE dbo.{seq} START WITH 1 INCREMENT BY 1')
-            """)
-        tgt.commit()
-    finally:
         tgt.close()
 
 
@@ -406,7 +387,6 @@ if __name__ == "__main__":
     suppliers_extract()
 
     print("\n--- REQUIREMENT 5: Transform ---")
-    ensure_sequences()
     customers_transform()
     suppliers_transform()
 
