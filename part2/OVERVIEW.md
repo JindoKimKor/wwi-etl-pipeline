@@ -4,12 +4,12 @@ Build the full ETL pipeline: WideWorldImporters → Stage → PreLoad → WWI_DM
 
 ## Requirements Overview
 
-| Req | Description | Marks | Owner | SPEC |
-|-----|-------------|-------|-------|------|
-| [Req 4](req4-extract/) | Extract — T-SQL (A) + Python (B) + SSIS (C) | 6 | A + B + C | [SPEC](req4-extract/SPEC.md) |
-| [Req 5](req5-transform/) | Transform — T-SQL (A) + Python (B) + SSIS (C) | 8 | A + B + C | [SPEC](req5-transform/SPEC.md) |
-| [Req 6](req6-load/) | Load — Dim/Fact Load SP + Transaction | 4 | Member A | [SPEC](req6-load/SPEC.md) |
-| [Req 7](req7-execute/) | Run ETL for 2013-01-01~04 + Req 3 query | 2 | Member A | [SPEC](req7-execute/SPEC.md) |
+| Req                   | Description                                    | Marks | Owner     | SPEC                        |
+| --------------------- | ---------------------------------------------- | ----- | --------- | --------------------------- |
+| [Req 4](req4-extract/)   | Extract — T-SQL (A) + Python (B) + SSIS (C)   | 6     | A + B + C | [SPEC](req4-extract/SPEC.md)   |
+| [Req 5](req5-transform/) | Transform — T-SQL (A) + Python (B) + SSIS (C) | 8     | A + B + C | [SPEC](req5-transform/SPEC.md) |
+| [Req 6](req6-load/)      | Load — Dim/Fact Load SP + Transaction         | 4     | Member A  | [SPEC](req6-load/SPEC.md)      |
+| [Req 7](req7-execute/)   | Run ETL for 2013-01-01~04 + Req 3 query        | 2     | Member A  | [SPEC](req7-execute/SPEC.md)   |
 
 ## Full ETL Flow
 
@@ -48,11 +48,11 @@ Req 1 (Tables) → Req 4 (Extract)
 
 ## Member Distribution
 
-| Member | Req 4 (Extract) | Req 5 (Transform) |
-|--------|-----------------|-------------------|
-| **A** | T-SQL (all SPs) | T-SQL (all SPs) |
-| **B** | Python (min 1) | Python (min 1) |
-| **C** | SSIS (min 1) | SSIS (min 1) |
+| Member      | Req 4 (Extract) | Req 5 (Transform) |
+| ----------- | --------------- | ----------------- |
+| **A** | T-SQL (all SPs) | T-SQL (all SPs)   |
+| **B** | Python (min 1)  | Python (min 1)    |
+| **C** | SSIS (min 1)    | SSIS (min 1)      |
 
 Req 6, 7 = T-SQL only (Member A).
 
