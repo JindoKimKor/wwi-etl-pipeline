@@ -11,8 +11,8 @@
   DTS:LocaleID="1033"
   DTS:ObjectName="Package"
   DTS:PackageType="5"
-  DTS:VersionBuild="30"
-  DTS:VersionGUID="{C07EF5B8-AEC2-4055-954E-F1D5606A5770}">
+  DTS:VersionBuild="33"
+  DTS:VersionGUID="{BEC2A99C-1B37-463A-BE93-3742B7F9EE40}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
@@ -99,12 +99,16 @@
     -- Delivery Address Hierarchy
     dc.CityName AS DeliveryCityName,
     dsp.StateProvinceCode AS DeliveryStateProvCode,
+    dsp.StateProvinceName AS DeliveryStateProvName,
     dct.CountryName AS DeliveryCountryName,
+    dct.FormalName AS DeliveryCountryFormalName,
     
     -- Postal Address Hierarchy
     pc.CityName AS PostalCityName,
     psp.StateProvinceCode AS PostalStateProvCode,
-    pct.CountryName AS PostalCountryName
+    psp.StateProvinceName AS PostalStateProvName,
+    pct.CountryName AS PostalCountryName,
+    pct.FormalName AS PostalCountryFormalName
 
 FROM Sales.Customers c
 LEFT JOIN Sales.CustomerCategories cc 
@@ -240,6 +244,46 @@ LEFT JOIN Application.Countries pct
                           lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[PostalCountryName]"
                           name="PostalCountryName"
                           truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[DeliveryStateProvName]"
+                          dataType="wstr"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].ExternalColumns[DeliveryStateProvName]"
+                          length="50"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[DeliveryStateProvName]"
+                          name="DeliveryStateProvName"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[DeliveryCountryFormalName]"
+                          dataType="wstr"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].ExternalColumns[DeliveryCountryFormalName]"
+                          length="60"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[DeliveryCountryFormalName]"
+                          name="DeliveryCountryFormalName"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[PostalStateProvName]"
+                          dataType="wstr"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].ExternalColumns[PostalStateProvName]"
+                          length="50"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[PostalStateProvName]"
+                          name="PostalStateProvName"
+                          truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[PostalCountryFormalName]"
+                          dataType="wstr"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].ExternalColumns[PostalCountryFormalName]"
+                          length="60"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[PostalCountryFormalName]"
+                          name="PostalCountryFormalName"
+                          truncationRowDisposition="FailComponent" />
                       </outputColumns>
                       <externalMetadataColumns
                         isUsed="True">
@@ -283,6 +327,26 @@ LEFT JOIN Application.Countries pct
                           dataType="wstr"
                           length="60"
                           name="PostalCountryName" />
+                        <externalMetadataColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].ExternalColumns[DeliveryStateProvName]"
+                          dataType="wstr"
+                          length="50"
+                          name="DeliveryStateProvName" />
+                        <externalMetadataColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].ExternalColumns[DeliveryCountryFormalName]"
+                          dataType="wstr"
+                          length="60"
+                          name="DeliveryCountryFormalName" />
+                        <externalMetadataColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].ExternalColumns[PostalStateProvName]"
+                          dataType="wstr"
+                          length="50"
+                          name="PostalStateProvName" />
+                        <externalMetadataColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].ExternalColumns[PostalCountryFormalName]"
+                          dataType="wstr"
+                          length="60"
+                          name="PostalCountryFormalName" />
                       </externalMetadataColumns>
                     </output>
                     <output
@@ -315,11 +379,23 @@ LEFT JOIN Application.Countries pct
                           lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[DeliveryStateProvCode]"
                           name="DeliveryStateProvCode" />
                         <outputColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[DeliveryStateProvName]"
+                          dataType="wstr"
+                          length="50"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[DeliveryStateProvName]"
+                          name="DeliveryStateProvName" />
+                        <outputColumn
                           refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[DeliveryCountryName]"
                           dataType="wstr"
                           length="60"
                           lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[DeliveryCountryName]"
                           name="DeliveryCountryName" />
+                        <outputColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[DeliveryCountryFormalName]"
+                          dataType="wstr"
+                          length="60"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[DeliveryCountryFormalName]"
+                          name="DeliveryCountryFormalName" />
                         <outputColumn
                           refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[PostalCityName]"
                           dataType="wstr"
@@ -333,11 +409,23 @@ LEFT JOIN Application.Countries pct
                           lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[PostalStateProvCode]"
                           name="PostalStateProvCode" />
                         <outputColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[PostalStateProvName]"
+                          dataType="wstr"
+                          length="50"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[PostalStateProvName]"
+                          name="PostalStateProvName" />
+                        <outputColumn
                           refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[PostalCountryName]"
                           dataType="wstr"
                           length="60"
                           lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[PostalCountryName]"
                           name="PostalCountryName" />
+                        <outputColumn
+                          refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[PostalCountryFormalName]"
+                          dataType="wstr"
+                          length="60"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[PostalCountryFormalName]"
+                          name="PostalCountryFormalName" />
                         <outputColumn
                           refId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
                           dataType="i4"
@@ -483,6 +571,34 @@ LEFT JOIN Application.Countries pct
                           cachedName="PostalCountryName"
                           externalMetadataColumnId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[PostalCountryName]"
                           lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[PostalCountryName]" />
+                        <inputColumn
+                          refId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].Columns[DeliveryStateProvName]"
+                          cachedDataType="wstr"
+                          cachedLength="50"
+                          cachedName="DeliveryStateProvName"
+                          externalMetadataColumnId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[DeliveryStateProvName]"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[DeliveryStateProvName]" />
+                        <inputColumn
+                          refId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].Columns[DeliveryCountryFormalName]"
+                          cachedDataType="wstr"
+                          cachedLength="60"
+                          cachedName="DeliveryCountryFormalName"
+                          externalMetadataColumnId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[DeliveryCountryFormalName]"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[DeliveryCountryFormalName]" />
+                        <inputColumn
+                          refId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].Columns[PostalStateProvName]"
+                          cachedDataType="wstr"
+                          cachedLength="50"
+                          cachedName="PostalStateProvName"
+                          externalMetadataColumnId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[PostalStateProvName]"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[PostalStateProvName]" />
+                        <inputColumn
+                          refId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].Columns[PostalCountryFormalName]"
+                          cachedDataType="wstr"
+                          cachedLength="60"
+                          cachedName="PostalCountryFormalName"
+                          externalMetadataColumnId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[PostalCountryFormalName]"
+                          lineageId="Package\Customers\Extract Customers\Get Customer Data.Outputs[OLE DB Source Output].Columns[PostalCountryFormalName]" />
                       </inputColumns>
                       <externalMetadataColumns
                         isUsed="True">
@@ -526,6 +642,26 @@ LEFT JOIN Application.Countries pct
                           dataType="wstr"
                           length="50"
                           name="PostalCountryName" />
+                        <externalMetadataColumn
+                          refId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[DeliveryStateProvName]"
+                          dataType="wstr"
+                          length="50"
+                          name="DeliveryStateProvName" />
+                        <externalMetadataColumn
+                          refId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[DeliveryCountryFormalName]"
+                          dataType="wstr"
+                          length="50"
+                          name="DeliveryCountryFormalName" />
+                        <externalMetadataColumn
+                          refId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[PostalStateProvName]"
+                          dataType="wstr"
+                          length="50"
+                          name="PostalStateProvName" />
+                        <externalMetadataColumn
+                          refId="Package\Customers\Extract Customers\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[PostalCountryFormalName]"
+                          dataType="wstr"
+                          length="50"
+                          name="PostalCountryFormalName" />
                       </externalMetadataColumns>
                     </input>
                   </inputs>
@@ -644,31 +780,34 @@ LEFT JOIN Application.Countries pct
                       description="The SQL command to be executed."
                       name="SqlCommand"
                       UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">SELECT
-	o.OrderDate,
-	ol.Quantity,
-	ol.UnitPrice,
-	ol.TaxRate,
-	cu.CustomerName,
-	ct.CityName,
-	sp.StateProvinceName,
-	co.CountryName,
-	si.StockItemName,
-	p.LogonName
+  o.OrderDate,
+  ol.Quantity,
+  ol.UnitPrice,
+  ol.TaxRate,
+  cu.CustomerName,
+  ct.CityName,
+  sp.StateProvinceName,
+  co.CountryName,
+  si.StockItemName,
+  p.LogonName,
+  su.SupplierName
 FROM Sales.OrderLines ol
 LEFT JOIN Sales.Orders o
-	ON ol.OrderID = o.OrderID
+  ON ol.OrderID = o.OrderID
 LEFT JOIN Sales.Customers cu
-	ON o.CustomerID = cu.CustomerID
+  ON o.CustomerID = cu.CustomerID
 LEFT JOIN Application.Cities ct
-	ON cu.DeliveryCityID = ct.CityID
+  ON cu.DeliveryCityID = ct.CityID
 LEFT JOIN Application.StateProvinces sp
-	ON ct.StateProvinceID = sp.StateProvinceID
+  ON ct.StateProvinceID = sp.StateProvinceID
 LEFT JOIN Application.Countries co
-	ON sp.CountryID = co.CountryID
+  ON sp.CountryID = co.CountryID
 LEFT JOIN Warehouse.StockItems si
-	ON ol.StockItemID = si.StockItemID
+  ON ol.StockItemID = si.StockItemID
 LEFT JOIN Application.People p
-	ON o.SalespersonPersonID = p.PersonID;</property>
+  ON o.SalespersonPersonID = p.PersonID
+LEFT JOIN Purchasing.Suppliers su
+  ON si.SupplierID = su.SupplierID;</property>
                     <property
                       dataType="System.String"
                       description="The variable that contains the SQL command to be executed."
@@ -804,6 +943,16 @@ LEFT JOIN Application.People p
                           lineageId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Output].Columns[StockItemName]"
                           name="StockItemName"
                           truncationRowDisposition="FailComponent" />
+                        <outputColumn
+                          refId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Output].Columns[SupplierName]"
+                          dataType="wstr"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Output].ExternalColumns[SupplierName]"
+                          length="100"
+                          lineageId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Output].Columns[SupplierName]"
+                          name="SupplierName"
+                          truncationRowDisposition="FailComponent" />
                       </outputColumns>
                       <externalMetadataColumns
                         isUsed="True">
@@ -857,6 +1006,11 @@ LEFT JOIN Application.People p
                           dataType="wstr"
                           length="100"
                           name="StockItemName" />
+                        <externalMetadataColumn
+                          refId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Output].ExternalColumns[SupplierName]"
+                          dataType="wstr"
+                          length="100"
+                          name="SupplierName" />
                       </externalMetadataColumns>
                     </output>
                     <output
@@ -924,6 +1078,12 @@ LEFT JOIN Application.People p
                           length="50"
                           lineageId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Error Output].Columns[LogonName]"
                           name="LogonName" />
+                        <outputColumn
+                          refId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Error Output].Columns[SupplierName]"
+                          dataType="wstr"
+                          length="100"
+                          lineageId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Error Output].Columns[SupplierName]"
+                          name="SupplierName" />
                         <outputColumn
                           refId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
                           dataType="i4"
@@ -1083,6 +1243,13 @@ LEFT JOIN Application.People p
                           cachedName="StockItemName"
                           externalMetadataColumnId="Package\Orders\Extract Orders\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[StockItemName]"
                           lineageId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Output].Columns[StockItemName]" />
+                        <inputColumn
+                          refId="Package\Orders\Extract Orders\Insert Into Staging.Inputs[OLE DB Destination Input].Columns[SupplierName]"
+                          cachedDataType="wstr"
+                          cachedLength="100"
+                          cachedName="SupplierName"
+                          externalMetadataColumnId="Package\Orders\Extract Orders\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[SupplierName]"
+                          lineageId="Package\Orders\Extract Orders\Get Orders Data.Outputs[OLE DB Source Output].Columns[SupplierName]" />
                       </inputColumns>
                       <externalMetadataColumns
                         isUsed="True">
@@ -1136,6 +1303,11 @@ LEFT JOIN Application.People p
                           dataType="wstr"
                           length="100"
                           name="StockItemName" />
+                        <externalMetadataColumn
+                          refId="Package\Orders\Extract Orders\Insert Into Staging.Inputs[OLE DB Destination Input].ExternalColumns[SupplierName]"
+                          dataType="wstr"
+                          length="50"
+                          name="SupplierName" />
                       </externalMetadataColumns>
                     </input>
                   </inputs>
@@ -2572,6 +2744,43 @@ LEFT JOIN Purchasing.SupplierCategories c
           Id="Package\Customers"
           TopLeft="109.166660702063,29.4666664617587" />
         <NodeLayout
+          Size="145.6,41.6"
+          Id="Package\Orders\Extract Orders"
+          TopLeft="59.399990984798,113.466664726072" />
+        <NodeLayout
+          Size="192,41.6"
+          Id="Package\Orders\Truncate Orders Staging"
+          TopLeft="40.2333253653516,38.9333319110341" />
+        <EdgeLayout
+          Id="Package\Orders.PrecedenceConstraints[Constraint]"
+          TopLeft="134.216658175075,80.5333319110341">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,32.9333328150379"
+              Start="0,0"
+              End="0,25.4333328150379">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,25.4333328150379" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <ContainerLayout
+          HeaderHeight="43"
+          IsExpanded="True"
+          PanelSize="265.6,211.2"
+          Size="265.6,254.4"
+          Id="Package\Orders"
+          TopLeft="313.333316213555,652.333334171044" />
+        <NodeLayout
           Size="154.4,41.6"
           Id="Package\Products\Extract Products"
           TopLeft="50.2333248189759,119.533331350552" />
@@ -2645,43 +2854,6 @@ LEFT JOIN Purchasing.SupplierCategories c
           Size="265.6,254.4"
           Id="Package\SalesPeople"
           TopLeft="102.499994399647,344.333333158559" />
-        <NodeLayout
-          Size="145.6,41.6"
-          Id="Package\Orders\Extract Orders"
-          TopLeft="59.399990984798,113.466664726072" />
-        <NodeLayout
-          Size="192,41.6"
-          Id="Package\Orders\Truncate Orders Staging"
-          TopLeft="40.2333253653516,38.9333319110341" />
-        <EdgeLayout
-          Id="Package\Orders.PrecedenceConstraints[Constraint]"
-          TopLeft="134.216658175075,80.5333319110341">
-          <EdgeLayout.Curve>
-            <mssgle:Curve
-              StartConnector="{assembly:Null}"
-              EndConnector="0,32.9333328150379"
-              Start="0,0"
-              End="0,25.4333328150379">
-              <mssgle:Curve.Segments>
-                <mssgle:SegmentCollection
-                  Capacity="5">
-                  <mssgle:LineSegment
-                    End="0,25.4333328150379" />
-                </mssgle:SegmentCollection>
-              </mssgle:Curve.Segments>
-            </mssgle:Curve>
-          </EdgeLayout.Curve>
-          <EdgeLayout.Labels>
-            <EdgeLabelCollection />
-          </EdgeLayout.Labels>
-        </EdgeLayout>
-        <ContainerLayout
-          HeaderHeight="43"
-          IsExpanded="True"
-          PanelSize="265.6,211.2"
-          Size="265.6,254.4"
-          Id="Package\Orders"
-          TopLeft="313.333316213555,652.333334171044" />
         <NodeLayout
           Size="156.8,41.6"
           Id="Package\Suppliers\Extract Suppliers"
@@ -2899,6 +3071,65 @@ LEFT JOIN Purchasing.SupplierCategories c
     </Properties>
   </PipelineComponentMetadata>
   <TaskHost
+    design-time-name="Package\Orders\Extract Orders">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="162.4,41.6"
+          Id="Package\Orders\Extract Orders\Insert Into Staging"
+          TopLeft="166.999997511506,254.999996200204" />
+        <NodeLayout
+          Size="154.4,41.6"
+          Id="Package\Orders\Extract Orders\Get Orders Data"
+          TopLeft="170.999997451901,150.999997749925" />
+        <EdgeLayout
+          Id="Package\Orders\Extract Orders.Paths[OLE DB Source Output]"
+          TopLeft="248.199997481704,192.599997749925">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,62.399998450279"
+              Start="0,0"
+              End="0,54.899998450279">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,54.899998450279" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Orders\Extract Orders\Get Orders Data">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Orders\Extract Orders\Insert Into Staging">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <TaskHost
     design-time-name="Package\Products\Extract Products">
     <LayoutInfo>
       <GraphLayout
@@ -3005,65 +3236,6 @@ LEFT JOIN Purchasing.SupplierCategories c
   </PipelineComponentMetadata>
   <PipelineComponentMetadata
     design-time-name="Package\SalesPeople\Extract SalesPeople\Insert Into Staging">
-    <Properties>
-      <Property>
-        <Name>DataSourceViewID</Name>
-      </Property>
-      <Property>
-        <Name>TableInfoObjectType</Name>
-        <Value
-          type="q2:string">Table</Value>
-      </Property>
-    </Properties>
-  </PipelineComponentMetadata>
-  <TaskHost
-    design-time-name="Package\Orders\Extract Orders">
-    <LayoutInfo>
-      <GraphLayout
-        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
-        <NodeLayout
-          Size="154.4,41.6"
-          Id="Package\Orders\Extract Orders\Get Orders Data"
-          TopLeft="170.999997451901,150.999997749925" />
-        <NodeLayout
-          Size="162.4,41.6"
-          Id="Package\Orders\Extract Orders\Insert Into Staging"
-          TopLeft="166.999997511506,254.999996200204" />
-        <EdgeLayout
-          Id="Package\Orders\Extract Orders.Paths[OLE DB Source Output]"
-          TopLeft="248.199997481704,192.599997749925">
-          <EdgeLayout.Curve>
-            <mssgle:Curve
-              StartConnector="{assembly:Null}"
-              EndConnector="0,62.399998450279"
-              Start="0,0"
-              End="0,54.899998450279">
-              <mssgle:Curve.Segments>
-                <mssgle:SegmentCollection
-                  Capacity="5">
-                  <mssgle:LineSegment
-                    End="0,54.899998450279" />
-                </mssgle:SegmentCollection>
-              </mssgle:Curve.Segments>
-            </mssgle:Curve>
-          </EdgeLayout.Curve>
-          <EdgeLayout.Labels>
-            <EdgeLabelCollection />
-          </EdgeLayout.Labels>
-        </EdgeLayout>
-      </GraphLayout>
-    </LayoutInfo>
-  </TaskHost>
-  <PipelineComponentMetadata
-    design-time-name="Package\Orders\Extract Orders\Get Orders Data">
-    <Properties>
-      <Property>
-        <Name>DataSourceViewID</Name>
-      </Property>
-    </Properties>
-  </PipelineComponentMetadata>
-  <PipelineComponentMetadata
-    design-time-name="Package\Orders\Extract Orders\Insert Into Staging">
     <Properties>
       <Property>
         <Name>DataSourceViewID</Name>
