@@ -16,16 +16,20 @@ GO
 -- CREATE FLAT STAGING TABLES
 -- ============================================================
 
--- Staging for Customers
+-- Staging for Customers and Locations
 CREATE TABLE dbo.Customers_Stage (
-    CustomerName            NVARCHAR(100)   NULL,
-    CustomerCategoryName    NVARCHAR(50)    NULL,
-    DeliveryCityName        NVARCHAR(50)    NULL,
-    DeliveryStateProvCode   NVARCHAR(5)     NULL,
-    DeliveryCountryName     NVARCHAR(50)    NULL,
-    PostalCityName          NVARCHAR(50)    NULL,
-    PostalStateProvCode     NVARCHAR(5)     NULL,
-    PostalCountryName       NVARCHAR(50)    NULL
+    CustomerName                NVARCHAR(100)   NULL,
+    CustomerCategoryName        NVARCHAR(50)    NULL,
+    DeliveryCityName            NVARCHAR(50)    NULL,
+    DeliveryStateProvCode       NVARCHAR(5)     NULL,
+    DeliveryStateProvName       NVARCHAR(50)    NULL,
+    DeliveryCountryName         NVARCHAR(50)    NULL,
+    DeliveryCountryFormalName   NVARCHAR(50)    NULL,
+    PostalCityName              NVARCHAR(50)    NULL,
+    PostalStateProvCode         NVARCHAR(5)     NULL,
+    PostalStateProvName         NVARCHAR(50)    NULL,
+    PostalCountryName           NVARCHAR(50)    NULL,
+    PostalCountryFormalName     NVARCHAR(50)    NULL
 );
 GO
 
@@ -70,6 +74,7 @@ CREATE TABLE dbo.Orders_Stage (
     StateProvinceName   NVARCHAR(50)    NULL,
     CountryName         NVARCHAR(60)    NULL,
     StockItemName       NVARCHAR(100)   NULL,
-    LogonName           NVARCHAR(50)    NULL
+    LogonName           NVARCHAR(50)    NULL,
+    SupplierName        NVARCHAR(50)    NULL
 );
 GO
