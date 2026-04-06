@@ -6,6 +6,19 @@
 -- Source: WideWorldImporters (OLTP)
 -- ============================================================
 
+USE master;
+GO
+
+IF DB_ID('WWI_DM') IS NOT NULL
+BEGIN
+    ALTER DATABASE WWI_DM SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE WWI_DM;
+END
+GO
+
+CREATE DATABASE WWI_DM;
+GO
+
 USE WWI_DM;
 GO
 
@@ -215,8 +228,8 @@ GO
 -- ============================================================
 -- Business scenario:
 --   The company wants to optimize supplier contracts by region.
---   If Supplier A's products sell 3x more in Toronto than Supplier B's,
---   we should increase Supplier A's stock in Toronto.
+--   If Supplier A's products sell 3x more in a city than Supplier B's,
+--   we should increase Supplier A's stock in that region.
 --
 -- What this query answers:
 --   "Which supplier's products generate the most revenue in each city?"
@@ -254,48 +267,38 @@ ORDER BY TotalRevenue DESC;
 GO
 
 -- ============================================================
--- Query 2: Product Brand Trend Over Time
+-- Query 2: Salesperson × Supplier Performance
 -- ============================================================
 -- Business scenario:
---   The company stocks products from multiple brands.
---   Some brands are growing, some are declining.
---   We need to know which direction each brand is heading.
+--   Which salesperson sells which supplier's products best?
+--   By matching salespeople to the suppliers they're most effective with,
+--   we can optimize assignments and improve revenue.
 --
 -- What this query answers:
---   "How does each brand's revenue change month over month?"
---   → answerable because FactSales has ProductKey (→ brand) and DateKey (→ month)
---
--- Without Star Schema (3NF):
---   OrderLines + StockItems (for brand) + Orders (for date) + ...
---   → multiple JOINs, and brand/date aggregation is complex
---
--- With Star Schema:
---   FactSales + DimProducts + DimDate → done
+--   "For each salesperson, which supplier generates the most revenue?"
+--   → answerable because FactSales has both SalespersonKey and SupplierKey
 --
 -- Predict the Future:
---   Brand with increasing monthly revenue → stock more, expand product line
---   Brand with declining revenue → reduce inventory, investigate why
---   Seasonal patterns → prepare stock levels ahead of peak months
+--   Salesperson X generates 80% from Supplier A → assign more of that supplier's accounts
+--   Salesperson Y is weak with a key supplier → provide training or reassign
+--   New supplier onboarded? → assign the salesperson best with similar categories
 -- ============================================================
 
 SELECT
-    d.CYear,
-    d.CMonth,
-    d.MonthName,
-    p.ProductBrand,
+    sp.FullName AS SalespersonName,
+    s.FullName AS SupplierName,
+    s.SupplierCategoryName,
     SUM(f.Quantity) AS TotalQuantity,
-    SUM(f.TotalAfterTax) AS TotalRevenue,
-    AVG(f.UnitPrice) AS AvgUnitPrice
+    SUM(f.TotalAfterTax) AS TotalRevenue
 FROM dbo.FactSales f
-JOIN dbo.DimProducts p     ON f.ProductKey  = p.ProductKey
-JOIN dbo.DimDate d         ON f.DateKey     = d.DateKey
-JOIN dbo.DimCustomers c    ON f.CustomerKey = c.CustomerKey
-JOIN dbo.DimLocation l     ON f.LocationKey = l.LocationKey
 JOIN dbo.DimSalesPeople sp ON f.SalespersonKey = sp.SalespersonKey
-JOIN dbo.DimSuppliers s    ON f.SupplierKey = s.SupplierKey
-WHERE p.ProductBrand IS NOT NULL
-GROUP BY d.CYear, d.CMonth, d.MonthName, p.ProductBrand
-ORDER BY p.ProductBrand, d.CYear, d.CMonth;
+JOIN dbo.DimSuppliers s    ON f.SupplierKey    = s.SupplierKey
+JOIN dbo.DimProducts p     ON f.ProductKey     = p.ProductKey
+JOIN dbo.DimCustomers c    ON f.CustomerKey    = c.CustomerKey
+JOIN dbo.DimLocation l     ON f.LocationKey    = l.LocationKey
+JOIN dbo.DimDate d         ON f.DateKey        = d.DateKey
+GROUP BY sp.FullName, s.FullName, s.SupplierCategoryName
+ORDER BY TotalRevenue DESC;
 GO
 
 -- ============================================================
