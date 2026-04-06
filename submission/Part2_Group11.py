@@ -17,12 +17,20 @@ from datetime import date
 # CONNECTION
 # ============================================================
 
+# Original connection (Samuel — Mac/Docker with SA auth):
+# CONN_STR = (
+#     "DRIVER={ODBC Driver 18 for SQL Server};"
+#     "SERVER=localhost,1433;"
+#     "UID=SA;"
+#     "PWD=Admin1234!;"
+#     "TrustServerCertificate=yes;"
+# )
+# Changed to Windows Auth + ODBC 17 for consistency with .sql and .dtsx files.
+# Submission requirement: "Your script must execute without error" — SA auth may fail on grading environment.
 CONN_STR = (
-    "DRIVER={ODBC Driver 18 for SQL Server};"
-    "SERVER=localhost,1433;"
-    "UID=SA;"
-    "PWD=Admin1234!;"
-    "TrustServerCertificate=yes;"
+    "DRIVER={ODBC Driver 17 for SQL Server};"
+    "SERVER=localhost;"
+    "Trusted_Connection=yes;"
 )
 
 def get_source():
